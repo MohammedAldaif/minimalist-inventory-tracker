@@ -5,6 +5,10 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 
+//Update index.js to use routes from inventroyRoutes.js file
+const inventoryRoutes = require('./routes/inventoryRoutes');
+app.use('/api/inventory', inventoryRoutes);
+
 // Placeholder route
 app.get('/', (req, res) => {
     res.send('Welcome to the Minimalist Inventory Tracker!');
