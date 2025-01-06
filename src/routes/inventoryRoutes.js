@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Inventory = require('../routes/inventoryRoutes.js'); // Adjust path as needed
+const Inventory = require('../../models/inventory'); // Correct path to the Inventory model
 
 // Get all inventory items
 router.get('/', async (req, res) => {
@@ -26,7 +26,7 @@ router.post('/', async (req, res) => {
 // Update an inventory item
 router.put('/:id', async (req, res) => {
     try {
-        const updatedItem = await Inventory.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updatedItem = await Inventory.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
         if (!updatedItem) return res.status(404).json({ message: 'Item not found' });
         res.json(updatedItem);
     } catch (err) {
