@@ -1,42 +1,48 @@
 const express = require('express');
 const router = express.Router();
+const Inventory = require('../routes/inventoryRoutes.js'); // Adjust path as needed
 
-//Mock data for now
-let inventory = [
-    {id : 1, name : 'Laptop', quantity : 5},
-    {id : 2, name : 'Phone', quantity: 10},
-];
-
-//Get all inventory items
-router.get('/',(req, res) => {
-    res.json(inventory)
+// Get all inventory items
+router.get('/', async (req, res) => {
+    try {
+        const inventory = await Inventory.find();
+        res.json(inventory);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 });
 
-//Add a new inventory item
-router.post('/',(req, res) => {
-    const newItem = {id : Date.now(), ...req.body};
-    inventory.push(newItem);
-    res.status(201).json(newItem);
+// Add a new inventory item
+router.post('/', async (req, res) => {
+    const newItem = new Inventory(req.body);
+    try {
+        const savedItem = await newItem.save();
+        res.status(201).json(savedItem);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
 });
 
-//Update an inventory item
-router.put('/:id', (req, res) => {
-    const { id } = req.params;
-    const index = inventory.findIndex(item => item.id == id);
-    if (index === -1) return res.status(404).json({ message: 'Item not found' });
-
-    inventory[index] = { ...inventory[index], ...req.body };
-    res.json(inventory[index]);
+// Update an inventory item
+router.put('/:id', async (req, res) => {
+    try {
+        const updatedItem = await Inventory.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updatedItem) return res.status(404).json({ message: 'Item not found' });
+        res.json(updatedItem);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
 });
 
 // Delete an inventory item
-router.delete('/:id', (req, res) => {
-    const { id } = req.params;
-    const index = inventory.findIndex(item => item.id == id);
-    if (index === -1) return res.status(404).json({ message: 'Item not found' });
-
-    const deletedItem = inventory.splice(index, 1);
-    res.json(deletedItem);
+router.delete('/:id', async (req, res) => {
+    try {
+        const deletedItem = await Inventory.findByIdAndDelete(req.params.id);
+        if (!deletedItem) return res.status(404).json({ message: 'Item not found' });
+        res.json(deletedItem);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 });
 
 module.exports = router;
