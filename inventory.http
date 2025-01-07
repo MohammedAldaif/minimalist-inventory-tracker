@@ -1,25 +1,30 @@
-@baseUrl = http://localhost:3000/api/inventory
+itemId=677c278be95006a69a3c59a9
+### Get All Inventory Items
+GET http://localhost:3000/api/inventory
+Content-Type: application/json
 
-### Get all inventory items
-GET {{baseUrl}}
+###
 
-### Add a new inventory item
-POST {{baseUrl}}
+### Add a New Inventory Item
+POST http://localhost:3000/api/inventory
 Content-Type: application/json
 
 {
-    "name": "Tablet",
-    "quantity": 15
-}
-
-### Update an inventory item
-PUT {{baseUrl}}/1
-Content-Type: application/json
-
-{
-    "name": "Updated Laptop",
+    "name": "Laptop",
     "quantity": 10
 }
 
-### Delete an inventory item
-DELETE {{baseUrl}}/1
+###
+
+### Update an Inventory Item
+PUT http://localhost:3000/api/inventory/{{itemId}}
+Content-Type: application/json
+
+{
+    "quantity": 15
+}
+
+###
+
+### Delete an Inventory Item
+DELETE http://localhost:3000/api/inventory/{{itemId}}
