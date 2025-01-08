@@ -11,6 +11,20 @@ export async function fetchInventory() {
     return data;
 }
 
+export async function updateInventoryItem(id, item) {
+    const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(item),
+    });
+    if (!response.ok) {
+        throw new Error("Failed to update inventory item");
+    }
+    return await response.json();
+}
+
 export async function deleteInventoryItem(id) {
     const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
         method: "DELETE",
