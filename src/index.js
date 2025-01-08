@@ -1,12 +1,13 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const inventoryRoutes = require('./routes/inventoryRoutes'); // Adjust the path if necessary
 require('dotenv').config({path: 'mongo_uri'});
 //
 console.log("log Mongo URI:", process.env.MONGO_URI); // Debugging step
 const app = express();
 app.use(express.json());
-
+app.use(cors());
 // MongoDB connection
 const mongoURI = process.env.MONGO_URI;
 mongoose.connect("mongodb+srv://MohammedAbdalla:Elex21%401996@cluster0.ssmnh.mongodb.net/inventoryApp?retryWrites=true&w=majority", {useUnifiedTopology:true,
@@ -30,7 +31,7 @@ app.get('/', (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

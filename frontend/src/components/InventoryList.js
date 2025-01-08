@@ -1,36 +1,50 @@
-import React, { useState, useEffect } from "react";
-import { getInventory } from "../services/api";
+import React, { useEffect, useState } from "react";
+import { fetchInventory } from "../services/api";
 
 function InventoryList() {
     const [inventory, setInventory] = useState([]);
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Fetch inventory data on component load
-        const fetchInventory = async () => {
+        async function fetchData() {
             try {
-                const data = await getInventory();
+                setLoading(false);
+                console.log("Fetching inventory data...");
+                const data = await fetchInventory();
+                console.log("Fetched inventory data:", data);
                 setInventory(data);
             } catch (err) {
-                setError("Failed to fetch inventory data");
+                setLoading(false);
+                console.error("Error fetching inventory:", err.message);
+                setError(err.message);
+            } finally {
+                setLoading(false);
             }
-        };
-
-        fetchInventory();
+        }
+        fetchData();
     }, []);
 
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
+
+    if (inventory.length === 0) {
+        return <div>No items found</div>;
+    }
+
     return (
-        <div>
-            <h2>Inventory List</h2>
-            {error && <p style={{ color: "red" }}>{error}</p>}
-            <ul>
-                {inventory.map((item) => (
-                    <li key={item._id}>
-                        <strong>{item.name}</strong> - {item.quantity}
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <ul>
+            {inventory.map(item => (
+                <li key={item._id}>
+                    {item.name} - Quantity: {item.quantity}
+                </li>
+            ))}
+        </ul>
     );
 }
 

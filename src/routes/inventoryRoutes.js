@@ -5,9 +5,11 @@ const Inventory = require('../../models/inventory'); // Correct path to the Inve
 // Get all inventory items
 router.get('/', async (req, res) => {
     try {
+        console.log("Request received at /api/inventory");
         const inventory = await Inventory.find();
         res.json(inventory);
     } catch (err) {
+        console.error("Error fetching inventory:", err);
         res.status(500).json({ message: err.message });
     }
 });

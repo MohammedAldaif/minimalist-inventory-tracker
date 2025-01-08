@@ -19,9 +19,12 @@
   },
   "homepage": "https://github.com/MohammedAldaif/minimalist-inventory-tracker#readme",
   "dependencies": {
+    "axios": "^1.7.9",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "mongoose": "^8.9.3"
+    "mongoose": "^8.9.3",
+    "react-router-dom": "^7.1.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"
