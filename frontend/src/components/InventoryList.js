@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { fetchInventory, updateInventoryItem, deleteInventoryItem } from "../services/api";
 import EditItemForm from "./EditItemForm";
+import "../../src/styles.css"; // Add your CSS file here for styling
 
 function InventoryList() {
     const [inventory, setInventory] = useState([]);
     const [error, setError] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
     const [loading, setLoading] = useState(true);
     const [editingItem, setEditingItem] = useState(null); // For handling item editing
 
@@ -15,7 +17,7 @@ function InventoryList() {
                 const data = await fetchInventory();
                 setInventory(data);
             } catch (err) {
-                setError(err.message);
+                setError("Failed to fetch inventory.");
             } finally {
                 setLoading(false);
             }
@@ -28,11 +30,17 @@ function InventoryList() {
     };
 
     const handleDelete = async (id) => {
+        const confirmDelete = window.confirm("Are you sure you want to delete this item?");
+        if (!confirmDelete) return;
+
         try {
             await deleteInventoryItem(id); // Assume deleteInventoryItem is defined in api.js
             setInventory((prev) => prev.filter((item) => item._id !== id));
+            setSuccessMessage("Item deleted successfully.");
         } catch (err) {
-            console.error("Error deleting item:", err.message);
+            setError("Failed to delete item.");
+        } finally {
+            setTimeout(() => setSuccessMessage(""), 3000); // Clear success message after 3 seconds
         }
     };
 
@@ -41,7 +49,7 @@ function InventoryList() {
     }
 
     if (error) {
-        return <div>Error: {error}</div>;
+        return <div className="error">Error: {error}</div>;
     }
 
     // If editing an item, render the EditItemForm
@@ -56,6 +64,7 @@ function InventoryList() {
                         prev.map((item) => (item._id === updatedItem._id ? updatedItem : item))
                     );
                     setEditingItem(null); // Exit editing mode
+                    setSuccessMessage("Item updated successfully.");
                 }}
             />
         );
@@ -66,15 +75,19 @@ function InventoryList() {
     }
 
     return (
-        <ul>
-            {inventory.map((item) => (
-                <li key={item._id}>
-                    {item.name} - Quantity: {item.quantity}
-                    <button onClick={() => handleEdit(item)}>Edit</button>
-                    <button onClick={() => handleDelete(item._id)}>Delete</button>
-                </li>
-            ))}
-        </ul>
+        <div>
+            {successMessage && <div className="success">{successMessage}</div>}
+            {error && <div className="error">{error}</div>}
+            <ul>
+                {inventory.map((item) => (
+                    <li key={item._id}>
+                        {item.name} - Quantity: {item.quantity}
+                        <button onClick={() => handleEdit(item)}>Edit</button>
+                        <button onClick={() => handleDelete(item._id)}>Delete</button>
+                    </li>
+                ))}
+            </ul>
+        </div>
     );
 }
 
