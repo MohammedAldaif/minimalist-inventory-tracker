@@ -10,3 +10,13 @@ export async function fetchInventory() {
     console.log("Parsed JSON:", data);
     return data;
 }
+
+export async function deleteInventoryItem(id) {
+    const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
+        method: "DELETE",
+    });
+    if (!response.ok) {
+        throw new Error("Failed to delete inventory item");
+    }
+    return await response.json();
+}

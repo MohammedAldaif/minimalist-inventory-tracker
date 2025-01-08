@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchInventory } from "../services/api";
+import { fetchInventory, deleteInventoryItem } from "../services/api";
 
 function InventoryList() {
     const [inventory, setInventory] = useState([]);
@@ -9,14 +9,9 @@ function InventoryList() {
     useEffect(() => {
         async function fetchData() {
             try {
-                setLoading(false);
-                console.log("Fetching inventory data...");
                 const data = await fetchInventory();
-                console.log("Fetched inventory data:", data);
                 setInventory(data);
             } catch (err) {
-                setLoading(false);
-                console.error("Error fetching inventory:", err.message);
                 setError(err.message);
             } finally {
                 setLoading(false);
@@ -24,6 +19,15 @@ function InventoryList() {
         }
         fetchData();
     }, []);
+
+    const handleDelete = async (id) => {
+        try {
+            await deleteInventoryItem(id);
+            setInventory(inventory.filter((item) => item._id !== id));
+        } catch (err) {
+            alert("Failed to delete item: " + err.message);
+        }
+    };
 
     if (loading) {
         return <div>Loading...</div>;
@@ -39,9 +43,10 @@ function InventoryList() {
 
     return (
         <ul>
-            {inventory.map(item => (
+            {inventory.map((item) => (
                 <li key={item._id}>
                     {item.name} - Quantity: {item.quantity}
+                    <button onClick={() => handleDelete(item._id)}>Delete</button>
                 </li>
             ))}
         </ul>
