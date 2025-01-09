@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { fetchInventory, updateInventoryItem, deleteInventoryItem } from "../services/api";
 import EditItemForm from "./EditItemForm";
-import "../../src/styles.css"; // Add your CSS file here for styling
 
 function InventoryList() {
     const [inventory, setInventory] = useState([]);
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [loading, setLoading] = useState(true);
-    const [editingItem, setEditingItem] = useState(null); // For handling item editing
+    const [editingItem, setEditingItem] = useState(null);
 
     useEffect(() => {
         async function fetchData() {
@@ -26,7 +25,7 @@ function InventoryList() {
     }, []);
 
     const handleEdit = (item) => {
-        setEditingItem(item); // Set the item being edited
+        setEditingItem(item);
     };
 
     const handleDelete = async (id) => {
@@ -34,36 +33,34 @@ function InventoryList() {
         if (!confirmDelete) return;
 
         try {
-            await deleteInventoryItem(id); // Assume deleteInventoryItem is defined in api.js
+            await deleteInventoryItem(id);
             setInventory((prev) => prev.filter((item) => item._id !== id));
             setSuccessMessage("Item deleted successfully.");
         } catch (err) {
             setError("Failed to delete item.");
         } finally {
-            setTimeout(() => setSuccessMessage(""), 3000); // Clear success message after 3 seconds
+            setTimeout(() => setSuccessMessage(""), 3000);
         }
     };
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <div className="text-center text-secondary">Loading...</div>;
     }
 
     if (error) {
-        return <div className="error">Error: {error}</div>;
+        return <div className="alert alert-danger text-center">{error}</div>;
     }
 
-    // If editing an item, render the EditItemForm
     if (editingItem) {
         return (
             <EditItemForm
                 item={editingItem}
-                onCancel={() => setEditingItem(null)} // Cancel editing
+                onCancel={() => setEditingItem(null)}
                 onSave={(updatedItem) => {
-                    // Update the inventory list with the edited item
                     setInventory((prev) =>
                         prev.map((item) => (item._id === updatedItem._id ? updatedItem : item))
                     );
-                    setEditingItem(null); // Exit editing mode
+                    setEditingItem(null);
                     setSuccessMessage("Item updated successfully.");
                 }}
             />
@@ -71,19 +68,36 @@ function InventoryList() {
     }
 
     if (inventory.length === 0) {
-        return <div>No items found</div>;
+        return <div className="text-center text-secondary">No items found</div>;
     }
 
     return (
-        <div>
-            {successMessage && <div className="success">{successMessage}</div>}
-            {error && <div className="error">{error}</div>}
-            <ul>
+        <div className="container mt-4">
+            {successMessage && <div className="alert alert-success">{successMessage}</div>}
+            {error && <div className="alert alert-danger">{error}</div>}
+            <ul className="list-group">
                 {inventory.map((item) => (
-                    <li key={item._id}>
-                        {item.name} - Quantity: {item.quantity}
-                        <button onClick={() => handleEdit(item)}>Edit</button>
-                        <button onClick={() => handleDelete(item._id)}>Delete</button>
+                    <li
+                        key={item._id}
+                        className="list-group-item d-flex justify-content-between align-items-center"
+                    >
+                        <span>
+                            {item.name} - <span className="fw-bold">Quantity: {item.quantity}</span>
+                        </span>
+                        <div>
+                            <button
+                                onClick={() => handleEdit(item)}
+                                className="btn btn-primary btn-sm me-2"
+                            >
+                                Edit
+                            </button>
+                            <button
+                                onClick={() => handleDelete(item._id)}
+                                className="btn btn-danger btn-sm"
+                            >
+                                Delete
+                            </button>
+                        </div>
                     </li>
                 ))}
             </ul>

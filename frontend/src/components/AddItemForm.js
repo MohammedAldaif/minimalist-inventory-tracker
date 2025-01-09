@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { fetchInventory } from "../services/api";
 
 function AddItemForm({ onItemAdded }) {
     const [name, setName] = useState("");
@@ -27,33 +26,39 @@ function AddItemForm({ onItemAdded }) {
     };
 
     return (
-        <div>
-            <h2>Add New Item</h2>
-            {error && <p style={{ color: "red" }}>{error}</p>}
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>
+        <div className="container mt-4">
+            <h2 className="text-center mb-4">Add New Item</h2>
+            {error && <div className="alert alert-danger">{error}</div>}
+            <form onSubmit={handleSubmit} className="shadow p-4 bg-light rounded">
+                <div className="mb-3">
+                    <label htmlFor="name" className="form-label">
                         Name:
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            required
-                        />
                     </label>
+                    <input
+                        type="text"
+                        id="name"
+                        className="form-control"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                    />
                 </div>
-                <div>
-                    <label>
+                <div className="mb-3">
+                    <label htmlFor="quantity" className="form-label">
                         Quantity:
-                        <input
-                            type="number"
-                            value={quantity}
-                            onChange={(e) => setQuantity(e.target.value)}
-                            required
-                        />
                     </label>
+                    <input
+                        type="number"
+                        id="quantity"
+                        className="form-control"
+                        value={quantity}
+                        onChange={(e) => setQuantity(e.target.value)}
+                        required
+                    />
                 </div>
-                <button type="submit">Add Item</button>
+                <button type="submit" className="btn btn-primary w-100">
+                    Add Item
+                </button>
             </form>
         </div>
     );
