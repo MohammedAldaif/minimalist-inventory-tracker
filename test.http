@@ -1,12 +1,11 @@
-itemId=677c278be95006a69a3c59a9
 ### Get All Inventory Items
-GET http://localhost:3000/api/inventory
-Content-Type: application/json
 
+GET http://localhost:3000/inventory
+Content-Type: application/json
 ###
 
 ### Add a New Inventory Item
-POST http://localhost:3000/api/inventory
+POST http://localhost:3000/inventory
 Content-Type: application/json
 
 {
@@ -17,7 +16,7 @@ Content-Type: application/json
 ###
 
 ### Update an Inventory Item
-PUT http://localhost:3000/api/inventory/{{itemId}}
+PUT http://localhost:3000/inventory/{{itemId}}
 Content-Type: application/json
 
 {
@@ -27,4 +26,4 @@ Content-Type: application/json
 ###
 
 ### Delete an Inventory Item
-DELETE http://localhost:3000/api/inventory/{{itemId}}
+DELETE http://localhost:3000/inventory/{{itemId}}
