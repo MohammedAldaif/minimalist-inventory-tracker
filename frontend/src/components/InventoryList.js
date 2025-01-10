@@ -1,14 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { fetchInventory, deleteInventoryItem } from "../services/api";
+import EditItemForm from "./EditItemForm";
+import AddItemForm from "./AddItemForm";
 
 function InventoryList() {
     const [inventory, setInventory] = useState([]);
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [loading, setLoading] = useState(true);
-    const [editingItemId, setEditingItemId] = useState(null);
-    const [newItem, setNewItem] = useState({ name: "", quantity: "" });
+    const [editingItem, setEditingItem] = useState(null);
+    const [isAdding, setIsAdding] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [sortConfig, setSortConfig] = useState({ key: "name", direction: "asc" });
+
+    const itemsPerPage = 10;
 
     useEffect(() => {
         async function fetchData() {
@@ -26,7 +32,9 @@ function InventoryList() {
     }, []);
 
     const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this item?")) return;
+        const confirmDelete = window.confirm("Are you sure you want to delete this item?");
+        if (!confirmDelete) return;
+
         try {
             await deleteInventoryItem(id);
             setInventory((prev) => prev.filter((item) => item._id !== id));
@@ -38,32 +46,34 @@ function InventoryList() {
         }
     };
 
-    const handleEdit = (id) => {
-        setEditingItemId(id);
-    };
-
-    const handleSaveEdit = (id, updatedFields) => {
-        setInventory((prev) =>
-            prev.map((item) => (item._id === id ? { ...item, ...updatedFields } : item))
-        );
-        setEditingItemId(null);
-        setSuccessMessage("Item updated successfully.");
-    };
-
-    const handleAddItem = () => {
-        if (!newItem.name || !newItem.quantity) {
-            setError("Name and Quantity are required.");
-            return;
+    const handleSort = (key) => {
+        let direction = "asc";
+        if (sortConfig.key === key && sortConfig.direction === "asc") {
+            direction = "desc";
         }
-        setInventory((prev) => [...prev, { ...newItem, _id: Date.now().toString() }]);
-        setNewItem({ name: "", quantity: "" });
-        setError("");
-        setSuccessMessage("Item added successfully.");
+        setSortConfig({ key, direction });
     };
 
-    const filteredInventory = inventory.filter((item) =>
+    const sortedInventory = [...inventory].sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+            return sortConfig.direction === "asc" ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+            return sortConfig.direction === "asc" ? 1 : -1;
+        }
+        return 0;
+    });
+
+    const filteredInventory = sortedInventory.filter((item) =>
         item.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const paginatedItems = filteredInventory.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    const totalPages = Math.ceil(filteredInventory.length / itemsPerPage);
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div className="text-danger">{error}</div>;
@@ -71,109 +81,112 @@ function InventoryList() {
     return (
         <div className="container mt-3">
             {successMessage && <div className="alert alert-success">{successMessage}</div>}
-            <div className="input-group my-3">
-                <span className="input-group-text">🔍</span>
-                <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Search inventory..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <div className="input-group">
+                    <span className="input-group-text">🔍</span>
+                    <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Search inventory..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <button
+                    className="btn btn-success text-white"
+                    onClick={() => setIsAdding((prev) => !prev)}
+                >
+                    ➕
+                </button>
             </div>
+            {isAdding && (
+                <AddItemForm
+                    onItemAdded={(newItem) => {
+                        setInventory((prev) => [...prev, newItem]);
+                        setIsAdding(false);
+                        setSuccessMessage("Item added successfully.");
+                    }}
+                />
+            )}
             <table className="table table-striped">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Quantity</th>
+                        <th onClick={() => handleSort("name")} style={{ cursor: "pointer" }}>
+                            Name {sortConfig.key === "name" && (sortConfig.direction === "asc" ? "⬆️" : "⬇️")}
+                        </th>
+                        <th onClick={() => handleSort("quantity")} style={{ cursor: "pointer" }}>
+                            Quantity {sortConfig.key === "quantity" && (sortConfig.direction === "asc" ? "⬆️" : "⬇️")}
+                        </th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {filteredInventory.map((item) =>
-                        editingItemId === item._id ? (
+                    {paginatedItems.length > 0 ? (
+                        paginatedItems.map((item) => (
                             <tr key={item._id}>
-                                <td>
-                                    <input
-                                        type="text"
-                                        defaultValue={item.name}
-                                        onBlur={(e) =>
-                                            handleSaveEdit(item._id, { name: e.target.value })
-                                        }
-                                        className="form-control"
-                                    />
-                                </td>
-                                <td>
-                                    <input
-                                        type="number"
-                                        defaultValue={item.quantity}
-                                        onBlur={(e) =>
-                                            handleSaveEdit(item._id, { quantity: e.target.value })
-                                        }
-                                        className="form-control"
-                                    />
-                                </td>
-                                <td>
-                                    <button
-                                        className="btn btn-secondary btn-sm"
-                                        onClick={() => setEditingItemId(null)}
-                                    >
-                                        Cancel
-                                    </button>
-                                </td>
-                            </tr>
-                        ) : (
-                            <tr key={item._id}>
-                                <td>{item.name}</td>
+                                <td>{editingItem === item._id ? "Editing..." : item.name}</td>
                                 <td>{item.quantity}</td>
                                 <td>
                                     <button
-                                        className="btn btn-sm btn-primary mx-1"
-                                        onClick={() => handleEdit(item._id)}
+                                        className="btn btn-primary btn-sm mx-1"
+                                        onClick={() => setEditingItem(item._id)}
                                     >
                                         ✏️
                                     </button>
                                     <button
-                                        className="btn btn-sm btn-danger mx-1"
+                                        className="btn btn-danger btn-sm mx-1"
                                         onClick={() => handleDelete(item._id)}
                                     >
                                         🗑️
                                     </button>
                                 </td>
                             </tr>
-                        )
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan="3" className="text-muted text-center">
+                                No items match your search.
+                            </td>
+                        </tr>
                     )}
-                    <tr>
-                        <td>
-                            <input
-                                type="text"
-                                placeholder="New Item Name"
-                                value={newItem.name}
-                                onChange={(e) =>
-                                    setNewItem((prev) => ({ ...prev, name: e.target.value }))
-                                }
-                                className="form-control"
-                            />
-                        </td>
-                        <td>
-                            <input
-                                type="number"
-                                placeholder="New Quantity"
-                                value={newItem.quantity}
-                                onChange={(e) =>
-                                    setNewItem((prev) => ({ ...prev, quantity: e.target.value }))
-                                }
-                                className="form-control"
-                            />
-                        </td>
-                        <td>
-                            <button className="btn btn-success btn-sm" onClick={handleAddItem}>
-                                ➕
-                            </button>
-                        </td>
-                    </tr>
                 </tbody>
             </table>
+            <nav>
+                <ul className="pagination justify-content-center">
+                    <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                        <button
+                            className="page-link"
+                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                        >
+                            Previous
+                        </button>
+                    </li>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <li
+                            key={page}
+                            className={`page-item ${currentPage === page ? "active" : ""}`}
+                        >
+                            <button className="page-link" onClick={() => setCurrentPage(page)}>
+                                {page}
+                            </button>
+                        </li>
+                    ))}
+                    <li
+                        className={`page-item ${
+                            currentPage === totalPages ? "disabled" : ""
+                        }`}
+                    >
+                        <button
+                            className="page-link"
+                            onClick={() =>
+                                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                            }
+                        >
+                            Next
+                        </button>
+                    </li>
+                </ul>
+            </nav>
         </div>
     );
 }
