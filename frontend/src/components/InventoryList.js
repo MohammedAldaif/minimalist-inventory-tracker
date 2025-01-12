@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { fetchInventory, deleteInventoryItem } from "../services/api";
-import EditItemForm from "./EditItemForm";
+import { fetchInventory, deleteInventoryItem, updateInventoryItem } from "../services/api";
 import AddItemForm from "./AddItemForm";
 
 function InventoryList() {
@@ -8,13 +7,13 @@ function InventoryList() {
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [loading, setLoading] = useState(true);
-    const [editingItem, setEditingItem] = useState(null);
+    const [editingItem, setEditingItem] = useState(null); // Object for the item being edited
     const [isAdding, setIsAdding] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
-    const [currentPage, setCurrentPage] = useState(1);
-    const [sortConfig, setSortConfig] = useState({ key: "name", direction: "asc" });
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
     const itemsPerPage = 10;
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
         async function fetchData() {
@@ -46,20 +45,42 @@ function InventoryList() {
         }
     };
 
-    const handleSort = (key) => {
-        let direction = "asc";
-        if (sortConfig.key === key && sortConfig.direction === "asc") {
-            direction = "desc";
+    const handleEditClick = (item) => {
+        setEditingItem(item); // Set the item being edited
+    };
+
+    const handleEditChange = (field, value) => {
+        setEditingItem((prev) => ({ ...prev, [field]: value })); // Update the field value in editingItem
+    };
+
+    const handleEditSave = async () => {
+        try {
+            const updated = await updateInventoryItem(editingItem._id, editingItem);
+            setInventory((prev) =>
+                prev.map((item) => (item._id === editingItem._id ? updated : item))
+            );
+            setEditingItem(null);
+            setSuccessMessage("Item updated successfully.");
+        } catch (err) {
+            setError("Failed to update item.");
+        } finally {
+            setTimeout(() => setSuccessMessage(""), 3000);
         }
+    };
+
+    const handleCancelEdit = () => {
+        setEditingItem(null); // Exit edit mode without saving
+    };
+
+    const handleSort = (key) => {
+        const direction = sortConfig.key === key && sortConfig.direction === "asc" ? "desc" : "asc";
         setSortConfig({ key, direction });
     };
 
     const sortedInventory = [...inventory].sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-            return sortConfig.direction === "asc" ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-            return sortConfig.direction === "asc" ? 1 : -1;
+        if (sortConfig.key) {
+            if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === "asc" ? -1 : 1;
+            if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === "asc" ? 1 : -1;
         }
         return 0;
     });
@@ -111,11 +132,11 @@ function InventoryList() {
             <table className="table table-striped">
                 <thead>
                     <tr>
-                        <th onClick={() => handleSort("name")} style={{ cursor: "pointer" }}>
-                            Name {sortConfig.key === "name" && (sortConfig.direction === "asc" ? "⬆️" : "⬇️")}
+                        <th onClick={() => handleSort("name")}>
+                            Name {sortConfig.key === "name" && (sortConfig.direction === "asc" ? "↑" : "↓")}
                         </th>
-                        <th onClick={() => handleSort("quantity")} style={{ cursor: "pointer" }}>
-                            Quantity {sortConfig.key === "quantity" && (sortConfig.direction === "asc" ? "⬆️" : "⬇️")}
+                        <th onClick={() => handleSort("quantity")}>
+                            Quantity {sortConfig.key === "quantity" && (sortConfig.direction === "asc" ? "↑" : "↓")}
                         </th>
                         <th>Actions</th>
                     </tr>
@@ -124,21 +145,64 @@ function InventoryList() {
                     {paginatedItems.length > 0 ? (
                         paginatedItems.map((item) => (
                             <tr key={item._id}>
-                                <td>{editingItem === item._id ? "Editing..." : item.name}</td>
-                                <td>{item.quantity}</td>
                                 <td>
-                                    <button
-                                        className="btn btn-primary btn-sm mx-1"
-                                        onClick={() => setEditingItem(item._id)}
-                                    >
-                                        ✏️
-                                    </button>
-                                    <button
-                                        className="btn btn-danger btn-sm mx-1"
-                                        onClick={() => handleDelete(item._id)}
-                                    >
-                                        🗑️
-                                    </button>
+                                    {editingItem && editingItem._id === item._id ? (
+                                        <input
+                                            type="text"
+                                            value={editingItem.name}
+                                            onChange={(e) => handleEditChange("name", e.target.value)}
+                                            className="form-control"
+                                        />
+                                    ) : (
+                                        item.name
+                                    )}
+                                </td>
+                                <td>
+                                    {editingItem && editingItem._id === item._id ? (
+                                        <input
+                                            type="number"
+                                            value={editingItem.quantity}
+                                            onChange={(e) =>
+                                                handleEditChange("quantity", e.target.value)
+                                            }
+                                            className="form-control"
+                                        />
+                                    ) : (
+                                        item.quantity
+                                    )}
+                                </td>
+                                <td>
+                                    {editingItem && editingItem._id === item._id ? (
+                                        <>
+                                            <button
+                                                className="btn btn-success btn-sm mx-1"
+                                                onClick={handleEditSave}
+                                            >
+                                                ✅ Save
+                                            </button>
+                                            <button
+                                                className="btn btn-secondary btn-sm mx-1"
+                                                onClick={handleCancelEdit}
+                                            >
+                                                ❌ Cancel
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button
+                                                className="btn btn-primary btn-sm mx-1"
+                                                onClick={() => handleEditClick(item)}
+                                            >
+                                                ✏️ Edit
+                                            </button>
+                                            <button
+                                                className="btn btn-danger btn-sm mx-1"
+                                                onClick={() => handleDelete(item._id)}
+                                            >
+                                                🗑️ Delete
+                                            </button>
+                                        </>
+                                    )}
                                 </td>
                             </tr>
                         ))
@@ -171,11 +235,7 @@ function InventoryList() {
                             </button>
                         </li>
                     ))}
-                    <li
-                        className={`page-item ${
-                            currentPage === totalPages ? "disabled" : ""
-                        }`}
-                    >
+                    <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
                         <button
                             className="page-link"
                             onClick={() =>
