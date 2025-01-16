@@ -1,10 +1,10 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const inventorySchema = new mongoose.Schema({
     name: { type: String, required: true },
     quantity: { type: Number, required: true },
-}, {
-    timestamps: true
+    userId: { type: String, required: true }, // Add userId to associate the item with the Firebase user
 });
 
-module.exports = mongoose.model('Inventory', inventorySchema);
+const Inventory = mongoose.model("Inventory", inventorySchema);
+module.exports = Inventory;

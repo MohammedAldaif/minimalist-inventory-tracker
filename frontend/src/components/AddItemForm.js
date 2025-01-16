@@ -1,51 +1,88 @@
 import React, { useState } from "react";
+import { getAuth } from "firebase/auth";
 
 function AddItemForm({ onItemAdded }) {
-    const [name, setName] = useState("");
+    const [itemName, setItemName] = useState("");
     const [quantity, setQuantity] = useState("");
-    const [error, setError] = useState("");
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null);
+
+        const auth = getAuth();
+        const user = auth.currentUser;
+
+        if (!user) {
+            setError("You must be logged in to add items.");
+            return;
+        }
+
+        // Basic validation for quantity
+        if (quantity <= 0) {
+            setError("Quantity must be greater than zero.");
+            return;
+        }
+
         try {
-            const response = await fetch("http://localhost:3000/api/inventory", {
+            setLoading(true); // Indicate loading
+            const token = await user.getIdToken(); // Fetch Firebase token
+
+            const response = await fetch("http://localhost:5000/api/inventory", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, quantity }),
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`, // Send token for auth
+                },
+                body: JSON.stringify({
+                    name: itemName,
+                    quantity: parseInt(quantity, 10),
+                }),
             });
+
             if (!response.ok) {
-                throw new Error("Failed to add item");
+                if (response.status === 401) {
+                    throw new Error("Unauthorized. Please log in again.");
+                } else if (response.status === 400) {
+                    throw new Error("Invalid request. Check the item details.");
+                } else {
+                    throw new Error("Failed to add new item. Try again later.");
+                }
             }
+
             const newItem = await response.json();
-            onItemAdded(newItem); // Notify parent component
-            setName("");
+            onItemAdded(newItem); // Notify parent component about the new item
+            setItemName(""); // Reset form
             setQuantity("");
         } catch (err) {
-            setError(err.message);
+            setError(err.message); // Display error
+        } finally {
+            setLoading(false); // End loading state
         }
     };
 
     return (
-        <div className="container mt-4">
-            <h2 className="text-center mb-4">Add New Item</h2>
-            {error && <div className="alert alert-danger">{error}</div>}
-            <form onSubmit={handleSubmit} className="shadow p-4 bg-light rounded">
+        <div>
+            <h2>Add New Item</h2>
+            {error && <p className="text-danger">{error}</p>}
+            <form onSubmit={handleSubmit}>
                 <div className="mb-3">
-                    <label htmlFor="name" className="form-label">
-                        Name:
+                    <label htmlFor="itemName" className="form-label">
+                        Item Name
                     </label>
                     <input
                         type="text"
-                        id="name"
+                        id="itemName"
                         className="form-control"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        value={itemName}
+                        onChange={(e) => setItemName(e.target.value)}
                         required
                     />
                 </div>
                 <div className="mb-3">
                     <label htmlFor="quantity" className="form-label">
-                        Quantity:
+                        Quantity
                     </label>
                     <input
                         type="number"
@@ -56,8 +93,8 @@ function AddItemForm({ onItemAdded }) {
                         required
                     />
                 </div>
-                <button type="submit" className="btn btn-primary w-100">
-                    Add Item
+                <button type="submit" className="btn btn-primary" disabled={loading}>
+                    {loading ? "Adding..." : "Add Item"}
                 </button>
             </form>
         </div>

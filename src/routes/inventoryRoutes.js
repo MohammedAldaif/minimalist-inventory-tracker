@@ -1,27 +1,31 @@
 const express = require('express');
 const router = express.Router();
 const Inventory = require('../../models/inventory'); // Correct path to the Inventory model
+const verifyToken = require("../middlewares/verifyToken");
 
-// Get all inventory items
-router.get('/', async (req, res) => {
+router.get("/", verifyToken, async (req, res) => {
+    const userId = req.user.uid;
+
     try {
-        console.log("Request received at /api/inventory");
-        const inventory = await Inventory.find();
-        res.json(inventory);
-    } catch (err) {
-        console.error("Error fetching inventory:", err);
-        res.status(500).json({ message: err.message });
+        const items = await Inventory.find({ userId });
+        res.json(items);
+    } catch (error) {
+        console.error("Error fetching items:", error.message);
+        res.status(500).json({ message: "Failed to fetch items." });
     }
 });
 
-// Add a new inventory item
-router.post('/', async (req, res) => {
-    const newItem = new Inventory(req.body);
+router.post("/", verifyToken, async (req, res) => {
+    const { name, quantity } = req.body;
+    const userId = req.user.uid; // Extract the userId from the Firebase token
+
     try {
-        const savedItem = await newItem.save();
-        res.status(201).json(savedItem);
-    } catch (err) {
-        res.status(400).json({ message: err.message });
+        const newItem = new Inventory({ name, quantity, userId });
+        await newItem.save();
+        res.status(201).json(newItem);
+    } catch (error) {
+        console.error("Error saving item:", error.message);
+        res.status(500).json({ message: "Failed to save the item." });
     }
 });
 

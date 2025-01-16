@@ -22,7 +22,8 @@ function InventoryList() {
                 const data = await fetchInventory();
                 setInventory(data);
             } catch (err) {
-                setError("Failed to fetch inventory.");
+                console.error("Error fetching inventory:", err);
+                setError(err.message || "Failed to fetch inventory.");
             } finally {
                 setLoading(false);
             }

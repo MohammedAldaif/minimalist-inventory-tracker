@@ -1,29 +1,37 @@
+require('dotenv').config({ path: './mongo_uri.env' });
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const inventoryRoutes = require('./routes/inventoryRoutes'); // Adjust the path if necessary
-require('dotenv').config({path: 'mongo_uri'});
-//
-console.log("log Mongo URI:", process.env.MONGO_URI); // Debugging step
+const admin = require('../node_modules/firebase-admin');
+const inventoryRoutes = require('./routes/inventoryRoutes');
+const verifyToken = require("./middlewares/verifyToken");
+
+// Initialize Firebase Admin SDK
+const serviceAccount = require('../service-account-key.json');
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+});
+
+// Express app setup
 const app = express();
 app.use(express.json());
 app.use(cors());
-// MongoDB connection
-const mongoURI = process.env.MONGO_URI;
-mongoose.connect("mongodb+srv://MohammedAbdalla:Elex21%401996@cluster0.ssmnh.mongodb.net/inventoryApp?retryWrites=true&w=majority", {useUnifiedTopology:true,
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-    .then(() => {
-        console.log('MongoDB connected successfully');
-    })
-    .catch(err => {
-        console.error('MongoDB connection error:', err.message);
-        process.exit(1); // Exit the process if the connection fails
-    });
 
-// Routes
-app.use('/api/inventory', inventoryRoutes);
+// MongoDB connection
+const connectDB = async () => {
+    try {
+        // Replace <username>, <password>, and <dbname> with your details
+        await mongoose.connect(process.env.mongo_uri);
+        console.log('MongoDB connected successfully!');
+    } catch (err) {
+        console.error('MongoDB connection error:', err.message);
+        process.exit(1);
+    }
+};
+connectDB();
+
+// Protect inventory routes with Firebase authentication
+app.use('/api/inventory', verifyToken, inventoryRoutes);
 
 // Default route
 app.get('/', (req, res) => {
