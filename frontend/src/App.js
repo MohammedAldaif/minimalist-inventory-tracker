@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import InventoryPage from "./pages/InventoryPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ContactPagee from "./pages/ContactPage"
 import { getAuth } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 
@@ -19,7 +20,7 @@ function AboutPage() {
 }
 
 function ContactPage() {
-  return <h2>Contact: Get in touch with us for support or inquiries.</h2>;
+  return ContactPagee();
 }
 
 function SettingsPage() {
