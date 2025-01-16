@@ -71,7 +71,6 @@ function InventoryPage() {
     return (
         <div>
             <h1>Inventory Management</h1>
-            <AddItemForm onItemAdded={handleItemAdded} />
             <InventoryList inventory={inventory} setInventory={setInventory} />
         </div>
     );

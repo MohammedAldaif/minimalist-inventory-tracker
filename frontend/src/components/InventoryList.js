@@ -7,13 +7,16 @@ function InventoryList() {
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [loading, setLoading] = useState(true);
-    const [editingItem, setEditingItem] = useState(null); // Object for the item being edited
+    const [editingItem, setEditingItem] = useState(null);
     const [isAdding, setIsAdding] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
     const itemsPerPage = 10;
     const [currentPage, setCurrentPage] = useState(1);
+
+    // ✅ Consistent category list for both adding and editing
+    const categoryOptions = ["Electronics", "Furniture", "Groceries", "Clothing", "Tools", "Other"];
 
     useEffect(() => {
         async function fetchData() {
@@ -22,8 +25,7 @@ function InventoryList() {
                 const data = await fetchInventory();
                 setInventory(data);
             } catch (err) {
-                console.error("Error fetching inventory:", err);
-                setError(err.message || "Failed to fetch inventory.");
+                setError("Failed to fetch inventory.");
             } finally {
                 setLoading(false);
             }
@@ -32,45 +34,33 @@ function InventoryList() {
     }, []);
 
     const handleDelete = async (id) => {
-        const confirmDelete = window.confirm("Are you sure you want to delete this item?");
-        if (!confirmDelete) return;
+        if (!window.confirm("Are you sure you want to delete this item?")) return;
 
         try {
             await deleteInventoryItem(id);
             setInventory((prev) => prev.filter((item) => item._id !== id));
             setSuccessMessage("Item deleted successfully.");
-        } catch (err) {
+        } catch {
             setError("Failed to delete item.");
         } finally {
             setTimeout(() => setSuccessMessage(""), 3000);
         }
     };
 
-    const handleEditClick = (item) => {
-        setEditingItem(item); // Set the item being edited
-    };
-
-    const handleEditChange = (field, value) => {
-        setEditingItem((prev) => ({ ...prev, [field]: value })); // Update the field value in editingItem
-    };
+    const handleEditClick = (item) => setEditingItem(item);
+    const handleEditChange = (field, value) => setEditingItem((prev) => ({ ...prev, [field]: value }));
 
     const handleEditSave = async () => {
         try {
             const updated = await updateInventoryItem(editingItem._id, editingItem);
-            setInventory((prev) =>
-                prev.map((item) => (item._id === editingItem._id ? updated : item))
-            );
+            setInventory((prev) => prev.map((item) => (item._id === editingItem._id ? updated : item)));
             setEditingItem(null);
             setSuccessMessage("Item updated successfully.");
-        } catch (err) {
+        } catch {
             setError("Failed to update item.");
         } finally {
             setTimeout(() => setSuccessMessage(""), 3000);
         }
-    };
-
-    const handleCancelEdit = () => {
-        setEditingItem(null); // Exit edit mode without saving
     };
 
     const handleSort = (key) => {
@@ -86,16 +76,20 @@ function InventoryList() {
         return 0;
     });
 
-    const filteredInventory = sortedInventory.filter((item) =>
-        item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredInventory = sortedInventory.filter(
+        (item) =>
+            item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (item.category && item.category.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
+    const totalPages = Math.ceil(filteredInventory.length / itemsPerPage);
     const paginatedItems = filteredInventory.slice(
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
     );
 
-    const totalPages = Math.ceil(filteredInventory.length / itemsPerPage);
+    const handlePrevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+    const handleNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div className="text-danger">{error}</div>;
@@ -103,26 +97,29 @@ function InventoryList() {
     return (
         <div className="container mt-3">
             {successMessage && <div className="alert alert-success">{successMessage}</div>}
+
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <div className="input-group">
                     <span className="input-group-text">🔍</span>
                     <input
                         type="text"
                         className="form-control"
-                        placeholder="Search inventory..."
+                        placeholder="Search by name or category..."
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => {
+                            setSearchTerm(e.target.value);
+                            setCurrentPage(1);
+                        }}
                     />
                 </div>
-                <button
-                    className="btn btn-success text-white"
-                    onClick={() => setIsAdding((prev) => !prev)}
-                >
-                    ➕
+                <button className="btn btn-success" onClick={() => setIsAdding((prev) => !prev)}>
+                    ➕ Add Item
                 </button>
             </div>
+
             {isAdding && (
                 <AddItemForm
+                    categoryOptions={categoryOptions}
                     onItemAdded={(newItem) => {
                         setInventory((prev) => [...prev, newItem]);
                         setIsAdding(false);
@@ -130,6 +127,7 @@ function InventoryList() {
                     }}
                 />
             )}
+
             <table className="table table-striped">
                 <thead>
                     <tr>
@@ -139,6 +137,9 @@ function InventoryList() {
                         <th onClick={() => handleSort("quantity")}>
                             Quantity {sortConfig.key === "quantity" && (sortConfig.direction === "asc" ? "↑" : "↓")}
                         </th>
+                        <th onClick={() => handleSort("category")}>
+                            Category {sortConfig.key === "category" && (sortConfig.direction === "asc" ? "↑" : "↓")}
+                        </th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -146,108 +147,55 @@ function InventoryList() {
                     {paginatedItems.length > 0 ? (
                         paginatedItems.map((item) => (
                             <tr key={item._id}>
+                                <td>{editingItem?._id === item._id ? <input type="text" className="form-control" value={editingItem.name} onChange={(e) => handleEditChange("name", e.target.value)} /> : item.name}</td>
+                                <td>{editingItem?._id === item._id ? <input type="number" className="form-control" value={editingItem.quantity} onChange={(e) => handleEditChange("quantity", e.target.value)} /> : item.quantity}</td>
+                                
+                                {/* ✅ Category field as a dropdown (consistent with AddItemForm) */}
                                 <td>
-                                    {editingItem && editingItem._id === item._id ? (
-                                        <input
-                                            type="text"
-                                            value={editingItem.name}
-                                            onChange={(e) => handleEditChange("name", e.target.value)}
-                                            className="form-control"
-                                        />
+                                    {editingItem?._id === item._id ? (
+                                        <select
+                                            className="form-select"
+                                            value={editingItem.category}
+                                            onChange={(e) => handleEditChange("category", e.target.value)}
+                                        >
+                                            {categoryOptions.map((option) => (
+                                                <option key={option} value={option}>
+                                                    {option}
+                                                </option>
+                                            ))}
+                                        </select>
                                     ) : (
-                                        item.name
+                                        item.category || "N/A"
                                     )}
                                 </td>
+
                                 <td>
-                                    {editingItem && editingItem._id === item._id ? (
-                                        <input
-                                            type="number"
-                                            value={editingItem.quantity}
-                                            onChange={(e) =>
-                                                handleEditChange("quantity", e.target.value)
-                                            }
-                                            className="form-control"
-                                        />
-                                    ) : (
-                                        item.quantity
-                                    )}
-                                </td>
-                                <td>
-                                    {editingItem && editingItem._id === item._id ? (
+                                    {editingItem?._id === item._id ? (
                                         <>
-                                            <button
-                                                className="btn btn-success btn-sm mx-1"
-                                                onClick={handleEditSave}
-                                            >
-                                                ✅ Save
-                                            </button>
-                                            <button
-                                                className="btn btn-secondary btn-sm mx-1"
-                                                onClick={handleCancelEdit}
-                                            >
-                                                ❌ Cancel
-                                            </button>
+                                            <button className="btn btn-success btn-sm mx-1" onClick={handleEditSave}>✅ Save</button>
+                                            <button className="btn btn-secondary btn-sm mx-1" onClick={() => setEditingItem(null)}>❌ Cancel</button>
                                         </>
                                     ) : (
                                         <>
-                                            <button
-                                                className="btn btn-primary btn-sm mx-1"
-                                                onClick={() => handleEditClick(item)}
-                                            >
-                                                ✏️ Edit
-                                            </button>
-                                            <button
-                                                className="btn btn-danger btn-sm mx-1"
-                                                onClick={() => handleDelete(item._id)}
-                                            >
-                                                🗑️ Delete
-                                            </button>
+                                            <button className="btn btn-primary btn-sm mx-1" onClick={() => handleEditClick(item)}>✏️ Edit</button>
+                                            <button className="btn btn-danger btn-sm mx-1" onClick={() => handleDelete(item._id)}>🗑️ Delete</button>
                                         </>
                                     )}
                                 </td>
                             </tr>
                         ))
                     ) : (
-                        <tr>
-                            <td colSpan="3" className="text-muted text-center">
-                                No items match your search.
-                            </td>
-                        </tr>
+                        <tr><td colSpan="4" className="text-center text-muted">No items found.</td></tr>
                     )}
                 </tbody>
             </table>
-            <nav>
-                <ul className="pagination justify-content-center">
-                    <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-                        <button
-                            className="page-link"
-                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                        >
-                            Previous
-                        </button>
-                    </li>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <li
-                            key={page}
-                            className={`page-item ${currentPage === page ? "active" : ""}`}
-                        >
-                            <button className="page-link" onClick={() => setCurrentPage(page)}>
-                                {page}
-                            </button>
-                        </li>
-                    ))}
-                    <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-                        <button
-                            className="page-link"
-                            onClick={() =>
-                                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                            }
-                        >
-                            Next
-                        </button>
-                    </li>
-                </ul>
-            </nav>
+
+            {/* ✅ Pagination Controls */}
+            <div className="d-flex justify-content-between mt-3">
+                <button className="btn btn-outline-primary" onClick={handlePrevPage} disabled={currentPage === 1}>⬅️ Prev</button>
+                <span>Page {currentPage} of {totalPages}</span>
+                <button className="btn btn-outline-primary" onClick={handleNextPage} disabled={currentPage === totalPages}>Next ➡️</button>
+            </div>
         </div>
     );
 }

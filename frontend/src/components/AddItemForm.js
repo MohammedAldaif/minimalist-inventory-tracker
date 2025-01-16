@@ -3,9 +3,23 @@ import { getAuth } from "firebase/auth";
 
 function AddItemForm({ onItemAdded }) {
     const [itemName, setItemName] = useState("");
+    const [category, setCategory] = useState(""); // ✅ New category state
     const [quantity, setQuantity] = useState("");
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
+
+    // ✅ Define available categories
+    const categories = [
+        "Electronics",
+        "Furniture",
+        "Office Supplies",
+        "Groceries",
+        "Clothing",
+        "Hardware",
+        "Cleaning Supplies",
+        "Books",
+        "Health & Personal Care"
+    ];
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -19,24 +33,29 @@ function AddItemForm({ onItemAdded }) {
             return;
         }
 
-        // Basic validation for quantity
+        // Basic validation
+        if (!category) {
+            setError("Please select a category.");
+            return;
+        }
         if (quantity <= 0) {
             setError("Quantity must be greater than zero.");
             return;
         }
 
         try {
-            setLoading(true); // Indicate loading
-            const token = await user.getIdToken(); // Fetch Firebase token
+            setLoading(true);
+            const token = await user.getIdToken();
 
             const response = await fetch("http://localhost:5000/api/inventory", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`, // Send token for auth
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
                     name: itemName,
+                    category, // ✅ Send category
                     quantity: parseInt(quantity, 10),
                 }),
             });
@@ -52,13 +71,14 @@ function AddItemForm({ onItemAdded }) {
             }
 
             const newItem = await response.json();
-            onItemAdded(newItem); // Notify parent component about the new item
-            setItemName(""); // Reset form
+            onItemAdded(newItem); 
+            setItemName("");
+            setCategory(""); // ✅ Reset category
             setQuantity("");
         } catch (err) {
-            setError(err.message); // Display error
+            setError(err.message);
         } finally {
-            setLoading(false); // End loading state
+            setLoading(false);
         }
     };
 
@@ -79,6 +99,25 @@ function AddItemForm({ onItemAdded }) {
                         onChange={(e) => setItemName(e.target.value)}
                         required
                     />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="category" className="form-label">
+                        Category
+                    </label>
+                    <select
+                        id="category"
+                        className="form-control"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        required
+                    >
+                        <option value="">Select Category</option>
+                        {categories.map((cat, index) => (
+                            <option key={index} value={cat}>
+                                {cat}
+                            </option>
+                        ))}
+                    </select>
                 </div>
                 <div className="mb-3">
                     <label htmlFor="quantity" className="form-label">

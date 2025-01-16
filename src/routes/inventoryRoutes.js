@@ -3,7 +3,7 @@ const router = express.Router();
 const Inventory = require('../../models/inventory'); // Correct path to the Inventory model
 const verifyToken = require("../middlewares/verifyToken");
 
-router.get("/", verifyToken, async (req, res) => {
+router.get("/", verifyToken, async (req, res) => { 
     const userId = req.user.uid;
 
     try {
@@ -16,11 +16,15 @@ router.get("/", verifyToken, async (req, res) => {
 });
 
 router.post("/", verifyToken, async (req, res) => {
-    const { name, quantity } = req.body;
-    const userId = req.user.uid; // Extract the userId from the Firebase token
+    const { name, category, quantity } = req.body; // ✅ Accept category
+    const userId = req.user.uid; // Extract the userId from Firebase token
+
+    if (!name || !category || !quantity) {
+        return res.status(400).json({ message: "All fields (name, category, quantity) are required." });
+    }
 
     try {
-        const newItem = new Inventory({ name, quantity, userId });
+        const newItem = new Inventory({ name, category, quantity, userId });
         await newItem.save();
         res.status(201).json(newItem);
     } catch (error) {
