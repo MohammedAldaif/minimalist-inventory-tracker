@@ -15,8 +15,8 @@ function InventoryList() {
     const itemsPerPage = 10;
     const [currentPage, setCurrentPage] = useState(1);
 
-    // ✅ Consistent category list for both adding and editing
     const categoryOptions = ["Electronics", "Furniture", "Groceries", "Clothing", "Tools", "Other"];
+    const LOW_STOCK_THRESHOLD = 10; // ✅ Low Stock Limit
 
     useEffect(() => {
         async function fetchData() {
@@ -35,7 +35,6 @@ function InventoryList() {
 
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this item?")) return;
-
         try {
             await deleteInventoryItem(id);
             setInventory((prev) => prev.filter((item) => item._id !== id));
@@ -96,8 +95,18 @@ function InventoryList() {
 
     return (
         <div className="container mt-3">
+            {/* ✅ Success Message */}
             {successMessage && <div className="alert alert-success">{successMessage}</div>}
 
+            {/* ✅ Low Stock Warning */}
+            {inventory.some((item) => item.quantity <= LOW_STOCK_THRESHOLD) && (
+                <div className="alert alert-warning d-flex align-items-center" role="alert">
+                    <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Warning:</strong> Some items are low on stock! Please restock soon.
+                </div>
+            )}
+
+            {/* ✅ Search Bar & Add Item */}
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <div className="input-group">
                     <span className="input-group-text">🔍</span>
@@ -117,6 +126,7 @@ function InventoryList() {
                 </button>
             </div>
 
+            {/* ✅ Add Item Form */}
             {isAdding && (
                 <AddItemForm
                     categoryOptions={categoryOptions}
@@ -128,60 +138,65 @@ function InventoryList() {
                 />
             )}
 
-            <table className="table table-striped">
-                <thead>
+            {/* ✅ Inventory Table */}
+            <table className="table">
+                <thead className="table-dark">
                     <tr>
-                        <th onClick={() => handleSort("name")}>
-                            Name {sortConfig.key === "name" && (sortConfig.direction === "asc" ? "↑" : "↓")}
-                        </th>
-                        <th onClick={() => handleSort("quantity")}>
-                            Quantity {sortConfig.key === "quantity" && (sortConfig.direction === "asc" ? "↑" : "↓")}
-                        </th>
-                        <th onClick={() => handleSort("category")}>
-                            Category {sortConfig.key === "category" && (sortConfig.direction === "asc" ? "↑" : "↓")}
-                        </th>
+                        <th onClick={() => handleSort("name")}>Name {sortConfig.key === "name" && (sortConfig.direction === "asc" ? "↑" : "↓")}</th>
+                        <th onClick={() => handleSort("quantity")}>Quantity {sortConfig.key === "quantity" && (sortConfig.direction === "asc" ? "↑" : "↓")}</th>
+                        <th onClick={() => handleSort("category")}>Category {sortConfig.key === "category" && (sortConfig.direction === "asc" ? "↑" : "↓")}</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {paginatedItems.length > 0 ? (
                         paginatedItems.map((item) => (
-                            <tr key={item._id}>
-                                <td>{editingItem?._id === item._id ? <input type="text" className="form-control" value={editingItem.name} onChange={(e) => handleEditChange("name", e.target.value)} /> : item.name}</td>
-                                <td>{editingItem?._id === item._id ? <input type="number" className="form-control" value={editingItem.quantity} onChange={(e) => handleEditChange("quantity", e.target.value)} /> : item.quantity}</td>
-                                
-                                {/* ✅ Category field as a dropdown (consistent with AddItemForm) */}
-                                <td>
-                                    {editingItem?._id === item._id ? (
-                                        <select
-                                            className="form-select"
-                                            value={editingItem.category}
-                                            onChange={(e) => handleEditChange("category", e.target.value)}
-                                        >
-                                            {categoryOptions.map((option) => (
-                                                <option key={option} value={option}>
-                                                    {option}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    ) : (
-                                        item.category || "N/A"
-                                    )}
-                                </td>
-
-                                <td>
-                                    {editingItem?._id === item._id ? (
-                                        <>
-                                            <button className="btn btn-success btn-sm mx-1" onClick={handleEditSave}>✅ Save</button>
+                            <tr key={item._id} className={item.quantity <= LOW_STOCK_THRESHOLD ? "table-warning" : ""}>
+                                {editingItem && editingItem._id === item._id ? (
+                                    <>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                value={editingItem.name}
+                                                onChange={(e) => handleEditChange("name", e.target.value)}
+                                                className="form-control"
+                                            />
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="number"
+                                                value={editingItem.quantity}
+                                                onChange={(e) => handleEditChange("quantity", Number(e.target.value))}
+                                                className="form-control"
+                                            />
+                                        </td>
+                                        <td>
+                                            <select
+                                                className="form-select"
+                                                value={editingItem.category}
+                                                onChange={(e) => handleEditChange("category", e.target.value)}
+                                            >
+                                                {categoryOptions.map((cat) => (
+                                                    <option key={cat} value={cat}>{cat}</option>
+                                                ))}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <button className="btn btn-success btn-sm mx-1" onClick={handleEditSave}>💾 Save</button>
                                             <button className="btn btn-secondary btn-sm mx-1" onClick={() => setEditingItem(null)}>❌ Cancel</button>
-                                        </>
-                                    ) : (
-                                        <>
+                                        </td>
+                                    </>
+                                ) : (
+                                    <>
+                                        <td>{item.name}</td>
+                                        <td>{item.quantity}</td>
+                                        <td>{item.category || "N/A"}</td>
+                                        <td>
                                             <button className="btn btn-primary btn-sm mx-1" onClick={() => handleEditClick(item)}>✏️ Edit</button>
                                             <button className="btn btn-danger btn-sm mx-1" onClick={() => handleDelete(item._id)}>🗑️ Delete</button>
-                                        </>
-                                    )}
-                                </td>
+                                        </td>
+                                    </>
+                                )}
                             </tr>
                         ))
                     ) : (
@@ -190,11 +205,10 @@ function InventoryList() {
                 </tbody>
             </table>
 
-            {/* ✅ Pagination Controls */}
-            <div className="d-flex justify-content-between mt-3">
-                <button className="btn btn-outline-primary" onClick={handlePrevPage} disabled={currentPage === 1}>⬅️ Prev</button>
-                <span>Page {currentPage} of {totalPages}</span>
-                <button className="btn btn-outline-primary" onClick={handleNextPage} disabled={currentPage === totalPages}>Next ➡️</button>
+            {/* ✅ Pagination */}
+            <div className="d-flex justify-content-between">
+                <button className="btn btn-outline-primary" disabled={currentPage === 1} onClick={handlePrevPage}>⬅️ Previous</button>
+                <button className="btn btn-outline-primary" disabled={currentPage === totalPages} onClick={handleNextPage}>Next ➡️</button>
             </div>
         </div>
     );
