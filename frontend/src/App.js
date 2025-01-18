@@ -5,15 +5,12 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ContactPage from "./pages/ContactPage";
 import DashboardPage from "./pages/DashboardPage";  // Only this import remains
+import AboutPage from "./pages/AboutPage"
 import { getAuth } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 
 function HomePage() {
   return <h2>Welcome to Minimalist Inventory Tracker</h2>;
-}
-
-function AboutPage() {
-  return <h2>About: Learn more about this application and its features.</h2>;
 }
 
 function SettingsPage() {
