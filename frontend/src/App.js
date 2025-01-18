@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import InventoryPage from "./pages/InventoryPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import ContactPagee from "./pages/ContactPage"
+import ContactPage from "./pages/ContactPage";
+import DashboardPage from "./pages/DashboardPage";  // Only this import remains
 import { getAuth } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 
@@ -11,16 +12,8 @@ function HomePage() {
   return <h2>Welcome to Minimalist Inventory Tracker</h2>;
 }
 
-function DashboardPage() {
-  return <h2>Dashboard: Track your inventory metrics here.</h2>;
-}
-
 function AboutPage() {
   return <h2>About: Learn more about this application and its features.</h2>;
-}
-
-function ContactPage() {
-  return ContactPagee();
 }
 
 function SettingsPage() {
@@ -38,7 +31,7 @@ function App() {
   return (
     <Router>
       <div>
-        {/* Header with Bootstrap styles */}
+        {/* Navigation Bar */}
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
           <div className="container-fluid">
             <Link className="navbar-brand" to="/">
@@ -90,12 +83,9 @@ function App() {
                       </Link>
                     </li>
                     <li className="nav-item">
-                      <button
-                        className="btn btn-link nav-link"
-                        onClick={() => auth.signOut()}
-                      >
+                      <Link className="nav-link" to="/" onClick={() => auth.signOut()}>
                         Logout
-                      </button>
+                      </Link>
                     </li>
                   </>
                 ) : (
@@ -117,7 +107,7 @@ function App() {
           </div>
         </nav>
 
-        {/* Main content */}
+        {/* Main Content */}
         <main className="container mt-4">
           <Routes>
             <Route path="/" element={<HomePage />} />

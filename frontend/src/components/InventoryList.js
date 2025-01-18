@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { fetchInventory, deleteInventoryItem, updateInventoryItem } from "../services/api";
 import AddItemForm from "./AddItemForm";
 
+
 function InventoryList() {
     const [inventory, setInventory] = useState([]);
     const [error, setError] = useState("");
