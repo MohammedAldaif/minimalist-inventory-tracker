@@ -6,16 +6,9 @@ import RegisterPage from "./pages/RegisterPage";
 import ContactPage from "./pages/ContactPage";
 import DashboardPage from "./pages/DashboardPage";  // Only this import remains
 import AboutPage from "./pages/AboutPage"
+import HomePage from "./pages/HomePage"
 import { getAuth } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
-
-function HomePage() {
-  return <h2>Welcome to Minimalist Inventory Tracker</h2>;
-}
-
-function SettingsPage() {
-  return <h2>Settings: Customize your application preferences.</h2>;
-}
 
 function App() {
   const auth = getAuth();
@@ -75,11 +68,6 @@ function App() {
                       </Link>
                     </li>
                     <li className="nav-item">
-                      <Link className="nav-link" to="/settings">
-                        Settings
-                      </Link>
-                    </li>
-                    <li className="nav-item">
                       <Link className="nav-link" to="/" onClick={() => auth.signOut()}>
                         Logout
                       </Link>
@@ -112,7 +100,6 @@ function App() {
             <Route path="/dashboard" element={user ? <DashboardPage /> : <LoginPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
-            <Route path="/settings" element={user ? <SettingsPage /> : <LoginPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
           </Routes>

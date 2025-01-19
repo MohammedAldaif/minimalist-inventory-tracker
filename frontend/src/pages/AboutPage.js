@@ -11,8 +11,8 @@ function AboutPage() {
                     <div className="card shadow-sm p-3">
                         <h4 className="card-title">🎯 Our Mission</h4>
                         <p>
-                            Our mission is to provide businesses with a **simple and efficient inventory management system**
-                            that helps them **track, manage, and optimize their stock levels** in real-time.
+                            Our mission is to provide businesses with a simple and efficient inventory management system**
+                            that helps them track, manage, and optimize their stock levels in real-time.
                         </p>
                     </div>
                 </div>
@@ -20,7 +20,7 @@ function AboutPage() {
                     <div className="card shadow-sm p-3">
                         <h4 className="card-title">👁️ Our Vision</h4>
                         <p>
-                            We aim to become the **leading inventory tracking solution**, ensuring businesses **never run out of stock or overstock**,
+                            We aim to become the leading inventory tracking solution, ensuring businesses never run out of stock or overstock**,
                             ultimately helping them save time and money.
                         </p>
                     </div>
@@ -45,26 +45,19 @@ function AboutPage() {
 
             {/* 👨‍💼 Our Team Section (Optional) */}
             <div className="row mt-4">
-                <h4 className="text-center">👨‍💼 Meet Our Team</h4>
+                <h4 className="text-center">👨‍💼 Our Team</h4>
                 <div className="col-md-4 text-center">
                     <div className="card shadow-sm p-3">
-                        <img src="https://via.placeholder.com/150" className="rounded-circle mx-auto d-block" alt="Founder" />
-                        <h5 className="mt-3">John Doe</h5>
-                        <p>Founder & CEO</p>
+                        <img src="https://via.placeholder.com/150" className="rounded-circle mx-auto d-block" alt="" />
+                        <h5 className="mt-3">Mohammed Abdalla</h5>
+                        <p>Backend Developer</p>
                     </div>
                 </div>
                 <div className="col-md-4 text-center">
                     <div className="card shadow-sm p-3">
-                        <img src="https://via.placeholder.com/150" className="rounded-circle mx-auto d-block" alt="CTO" />
-                        <h5 className="mt-3">Jane Smith</h5>
-                        <p>Chief Technology Officer</p>
-                    </div>
-                </div>
-                <div className="col-md-4 text-center">
-                    <div className="card shadow-sm p-3">
-                        <img src="https://via.placeholder.com/150" className="rounded-circle mx-auto d-block" alt="Developer" />
-                        <h5 className="mt-3">Michael Brown</h5>
-                        <p>Lead Developer</p>
+                        <img src="https://via.placeholder.com/150" className="rounded-circle mx-auto d-block" alt="" />
+                        <h5 className="mt-3">Zahowaa Abdalla</h5>
+                        <p>Frontend Developer</p>
                     </div>
                 </div>
             </div>

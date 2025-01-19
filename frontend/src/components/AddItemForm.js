@@ -1,25 +1,13 @@
 import React, { useState } from "react";
 import { getAuth } from "firebase/auth";
-
+import {categories} from "../constants/constants"
 function AddItemForm({ onItemAdded }) {
     const [itemName, setItemName] = useState("");
-    const [category, setCategory] = useState(""); // ✅ New category state
     const [quantity, setQuantity] = useState("");
+    const [category, setCategory] = useState("");
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    // ✅ Define available categories
-    const categories = [
-        "Electronics",
-        "Furniture",
-        "Office Supplies",
-        "Groceries",
-        "Clothing",
-        "Hardware",
-        "Cleaning Supplies",
-        "Books",
-        "Health & Personal Care"
-    ];
 
     const handleSubmit = async (e) => {
         e.preventDefault();

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { fetchInventory, deleteInventoryItem, updateInventoryItem } from "../services/api";
 import AddItemForm from "./AddItemForm";
+import {categories as categoryOptions} from "../constants/constants"
 
 
 function InventoryList() {
@@ -16,7 +17,6 @@ function InventoryList() {
     const itemsPerPage = 10;
     const [currentPage, setCurrentPage] = useState(1);
 
-    const categoryOptions = ["Electronics", "Furniture", "Groceries", "Clothing", "Tools", "Other"];
     const LOW_STOCK_THRESHOLD = 10; // ✅ Low Stock Limit
 
     useEffect(() => {
@@ -122,8 +122,10 @@ function InventoryList() {
                         }}
                     />
                 </div>
-                <button className="btn btn-success" onClick={() => setIsAdding((prev) => !prev)}>
-                    ➕ Add Item
+                <button className="btn btn-success" onClick={() => setIsAdding((prev) => !prev)}
+                    style={{backgroundColor:'green'}}
+                >
+                    <span style={{ color: 'white' }}>➕</span>
                 </button>
             </div>
 
