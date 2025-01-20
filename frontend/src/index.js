@@ -7,7 +7,6 @@ import reportWebVitals from './reportWebVitals';
 import { AuthProvider } from './AuthProvider'; // Import AuthProvider
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-process.removeAllListeners('warning');
 root.render(
   <React.StrictMode>
     <AuthProvider>
