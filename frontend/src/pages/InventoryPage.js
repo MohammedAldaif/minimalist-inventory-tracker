@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import InventoryList from "../components/InventoryList";
-import AddItemForm from "../components/AddItemForm";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 function InventoryPage() {
@@ -39,10 +38,6 @@ function InventoryPage() {
         });
         return unsubscribe; // Cleanup subscription on unmount
     }, []);
-
-    const handleItemAdded = (newItem) => {
-        setInventory([...inventory, newItem]); // Add the new item to the list
-    };
 
     if (loading) {
         return <div>Loading...</div>;

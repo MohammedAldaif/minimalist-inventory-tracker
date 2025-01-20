@@ -76,13 +76,13 @@ function ContactPage() {
 
           <h5 className="mt-4">Follow Us</h5>
           <div>
-            <a href="#" className="btn btn-outline-primary me-2">
+            <a href="/" className="btn btn-outline-primary me-2">
               <i className="bi bi-facebook"></i> Facebook
             </a>
-            <a href="#" className="btn btn-outline-info me-2">
+            <a href="/" className="btn btn-outline-info me-2">
               <i className="bi bi-twitter"></i> Twitter
             </a>
-            <a href="#" className="btn btn-outline-danger">
+            <a href="/" className="btn btn-outline-danger">
               <i className="bi bi-instagram"></i> Instagram
             </a>
           </div>
