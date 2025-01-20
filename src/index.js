@@ -15,7 +15,7 @@ admin.initializeApp({
 // Express app setup
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({ origin: "*" }));
 
 // MongoDB connection
 const connectDB = async () => {
