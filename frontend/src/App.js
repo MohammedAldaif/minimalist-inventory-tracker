@@ -1,3 +1,15 @@
+import React from "react";
+import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
+import InventoryPage from "./pages/InventoryPage";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import ContactPage from "./pages/ContactPage";
+import DashboardPage from "./pages/DashboardPage";  // Only this import remains
+import AboutPage from "./pages/AboutPage"
+import HomePage from "./pages/HomePage"
+import { getAuth } from "firebase/auth";
+import { useAuthState } from "react-firebase-hooks/auth";
+
 import { useState } from "react"; // Import useState
 
 function App() {
