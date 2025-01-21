@@ -1,19 +1,30 @@
 import { getAuth } from "firebase/auth";
-const API_BASE_URL = "http://localhost:3000/api"; // Update if necessary
+
+// ✅ Update API_BASE_URL to your actual backend URL
+const API_BASE_URL = "https://simple-inventory-tracker.netlify.app/";
+
+// ✅ Debug Auth Token Retrieval
 async function getAuthToken() {
     const auth = getAuth();
     const user = auth.currentUser;
     if (user) {
-        return await user.getIdToken();
+        const token = await user.getIdToken();
+        console.log("Auth Token:", token); // Debug log
+        return token;
     }
+    console.error("User is not authenticated");
     throw new Error("User is not authenticated");
 }
 
+// ✅ Fetch Inventory (Fixed for Mobile)
 export async function fetchInventory() {
     const token = await getAuthToken();
     const response = await fetch(`${API_BASE_URL}/inventory`, {
+        method: "GET",
+        credentials: "include", // Ensure cookies/auth headers are sent
         headers: {
-            Authorization: `Bearer ${token}`, // Include auth token
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
         },
     });
 
@@ -26,13 +37,15 @@ export async function fetchInventory() {
     return data;
 }
 
+// ✅ Update Inventory Item
 export async function updateInventoryItem(id, item) {
     const token = await getAuthToken();
     const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
         method: "PUT",
+        credentials: "include",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Include auth token
+            Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(item),
     });
@@ -42,12 +55,14 @@ export async function updateInventoryItem(id, item) {
     return await response.json();
 }
 
+// ✅ Delete Inventory Item
 export async function deleteInventoryItem(id) {
     const token = await getAuthToken();
     const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
         method: "DELETE",
+        credentials: "include",
         headers: {
-            Authorization: `Bearer ${token}`, // Include auth token
+            Authorization: `Bearer ${token}`,
         },
     });
     if (!response.ok) {
