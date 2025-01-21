@@ -1,72 +1,81 @@
 import { getAuth } from "firebase/auth";
 
-// ✅ Update API_BASE_URL to your actual backend URL
-const API_BASE_URL = "https://localhost:3000/api";
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:3000/api"; // Use environment variable
 
-// ✅ Debug Auth Token Retrieval
 async function getAuthToken() {
-    const auth = getAuth();
-    const user = auth.currentUser;
-    if (user) {
-        const token = await user.getIdToken();
-        console.log("Auth Token:", token); // Debug log
-        return token;
+    try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+        if (user) {
+            return await user.getIdToken();
+        }
+        throw new Error("User is not authenticated");
+    } catch (error) {
+        console.error("Error getting auth token:", error);
+        throw error;
     }
-    console.error("User is not authenticated");
-    throw new Error("User is not authenticated");
 }
 
-// ✅ Fetch Inventory (Fixed for Mobile)
 export async function fetchInventory() {
-    const token = await getAuthToken();
-    const response = await fetch(`${API_BASE_URL}/inventory`, {
-        method: "GET",
-        credentials: "include", // Ensure cookies/auth headers are sent
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-    });
+    try {
+        const token = await getAuthToken();
+        const response = await fetch(`${API_BASE_URL}/inventory`, {
+            headers: {
+                Authorization: `Bearer ${token}`, // Include auth token
+            },
+        });
 
-    console.log("API Response:", response);
-    if (!response.ok) {
-        throw new Error("Failed to fetch inventory data");
+        console.log("API Response:", response);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch inventory data: ${response.statusText}`);
+        }
+        const data = await response.json();
+        console.log("Parsed JSON:", data);
+        return data;
+    } catch (error) {
+        console.error("Error fetching inventory:", error);
+        throw error;
     }
-    const data = await response.json();
-    console.log("Parsed JSON:", data);
-    return data;
 }
 
-// ✅ Update Inventory Item
 export async function updateInventoryItem(id, item) {
-    const token = await getAuthToken();
-    const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
-        method: "PUT",
-        credentials: "include",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(item),
-    });
-    if (!response.ok) {
-        throw new Error("Failed to update inventory item");
+    try {
+        const token = await getAuthToken();
+        const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`, // Include auth token
+            },
+            body: JSON.stringify(item),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to update inventory item: ${response.statusText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Error updating inventory item:", error);
+        throw error;
     }
-    return await response.json();
 }
 
-// ✅ Delete Inventory Item
 export async function deleteInventoryItem(id) {
-    const token = await getAuthToken();
-    const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    if (!response.ok) {
-        throw new Error("Failed to delete inventory item");
+    try {
+        const token = await getAuthToken();
+        const response = await fetch(`${API_BASE_URL}/inventory/${id}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`, // Include auth token
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to delete inventory item: ${response.statusText}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Error deleting inventory item:", error);
+        throw error;
     }
-    return await response.json();
 }
