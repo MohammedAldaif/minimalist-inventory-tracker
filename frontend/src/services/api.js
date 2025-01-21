@@ -1,7 +1,7 @@
 import { getAuth } from "firebase/auth";
 
 // ✅ Update API_BASE_URL to your actual backend URL
-const API_BASE_URL = "https://minimalist-inventory-tracker-2so6.vercel.app/";
+const API_BASE_URL = "https://localhost:3000/api";
 
 // ✅ Debug Auth Token Retrieval
 async function getAuthToken() {
